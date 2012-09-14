@@ -1,31 +1,32 @@
 package PICA::Modification;
-#ABSTRACT: Request for modification of an identified PICA+ record
+#ABSTRACT: Modification of an identified PICA+ record
 
 use strict;
 use warnings;
 use v5.10;
 
-use Carp;
 use PICA::Record;
 
 =head1 DESCRIPTION
 
-PICA::Modification models a request for modification of an identified PICA+
-record (L<PICA::Record>). The request consist of the following attributes:
+PICA::Modification models a modification of an identified PICA+ record
+(L<PICA::Record>). The modification consist of the following attributes:
 
 =over 4
 
 =item id
 
-The fully qualified record identifier (C<PREFIX:ppn:PPN>).
+The fully qualified record identifier of form C<PREFIX:ppn:PPN> (optional).
 
 =item iln
 
-The ILN of level 1 record to modify.
+The ILN of level 1 record to modify. Only required for modifications that
+include level 1 fields.
 
 =item epn
 
-The EPN of the level 2 record to modify.
+The EPN of the level 2 record to modify. Only required for modifications that
+include level 2 fields.
 
 =item del
 
@@ -37,8 +38,8 @@ A stringified PICA+ record with fields to be added.
 
 =back
 
-The request may be malformed. A mapping from malformed attributes to error
-messages is stored together with the PICA::Modification object.
+A modification instance may be malformed. A mapping from malformed attributes
+to error messages is stored together with the PICA::Modification object.
 
 =method new ( %attributes )
 
@@ -119,16 +120,17 @@ sub check {
 
 =method attributes
 
-Returns a hash with attributes of this request for modification.
+Returns a hash reference with attributes of this modification (del, add, id,
+iln, epn).
 
 =cut
 
 sub attributes {
 	my $self = shift;
 
-	return (
+	return {
 		map { $_ => $self->{$_} } qw(id iln epn del add)
-	);
+	};
 }
 
 =method error( [ $attribute [ => $message ] ] )
@@ -154,8 +156,8 @@ sub error {
 
 =method apply ( $pica [, strict => 0|1 ] )
 
-Applies the request for modification on a given PICA+ record and returns the
-resulting record as L<PICA::Record> or C<undef> on malformed modifications. 
+Applies the modification on a given PICA+ record and returns the resulting
+record as L<PICA::Record> or C<undef> on malformed modifications. 
 
 Only edits at level 0 and level 1 are supported by now.
 
