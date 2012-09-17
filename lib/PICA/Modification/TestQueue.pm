@@ -52,23 +52,23 @@ sub run {
     $mod = PICA::Modification->new( del => '012A', id => 'bar:ppn:123' );
     my $id2 = $self->insert( $mod );
 	$list = $self->list( sort => 'id' );
-	is scalar @$list, 2, 'list size 2';
-    is $list->[0]->{id}, 'bar:ppn:123', 'sorted list';
+	is scalar @$list, 2, 'list size 2 after inserting second modification';
+    is $list->[0]->{id}, 'bar:ppn:123', 'list can be sorted';
 
 	$list = $self->list( id => 'foo:ppn:123' );
 	is scalar @$list, 1, 'search by field value';
     is $list->[0]->{id}, 'foo:ppn:123', 'only list matching modifications';
 
     foreach (0..4) {
-        $mod = PICA::Modification->new( del => '012A', id => "doz:ppn:$_" );
+        $mod = PICA::Modification->new( del => '012A', id => "doz:ppn:1$_" );
         $self->insert($mod);
     }
     $list = $self->list( sort => 'id', pagesize => 3 );
-    is scalar @$list, 3, 'pagesize';
+    is scalar @$list, 3, 'inserted five additional modifications, pagesize works';
 
     $list = $self->list( sort => 'id', pagesize => 3, page => 2 );
     is scalar @$list, 3, 'pagesize';
-    is $list->[0]->{id}, 'doz:ppn:2', 'page';
+    is $list->[0]->{id}, 'doz:ppn:12', 'page';
 
     $mod = PICA::Modification->new( add => '028A $xfoo' );
     $id2 = $self->update( $id => $mod );
@@ -76,6 +76,12 @@ sub run {
     $mod = $self->get($id);
     is $mod->{del}, '', 'update changed';
     is $mod->{add}, '028A $xfoo', 'update changed';
+
+	$mod = PICA::Modification->new( del => '012A', id  => 'xxx' );
+    is $self->insert($mod), undef, 'reject modification with error';
+
+	$mod = PICA::Modification->new( del => '012A', id  => 'xxx' );
+    is $self->update( $id => $mod), undef, 'reject modification with error';
 
 	my $delid = $self->delete($id);
 	is $delid, $id, 'deleted modification';

@@ -16,7 +16,7 @@ sub get {
 
 sub insert {
 	my ($self, $object) = @_;
-	return unless defined $object;
+	return unless defined $object and !$object->error;
 	my $id = ++$self->[1];
 	$self->[0]->{ $id } = $object;
 	return $id;
@@ -24,7 +24,7 @@ sub insert {
 
 sub update { 
     my ($self, $id => $object) = @_;
-    return unless defined $self->[0]->{ $id };
+    return unless defined $self->[0]->{ $id } and !$object->error;
 	$self->[0]->{ $id } = $object;
 	return $id;
 }

@@ -38,8 +38,9 @@ sub new {
 
 PICA::Modification::Queue implements a collection of modifications
 (L<PICA::Modification>) or requests (L<PICA::Modification::Request>) on PICA+
-recordsand together with the CRUDL operations get, insert, update, delete, and
-list.
+records together with the CRUDL operations get, insert, update, delete, and
+list. A queue may support insertion of modifications which then are stored as
+modification requests.
 
 The default implementation is a in-memory (non-persistent) hash
 (L<PICA::Modification::Queue::Hash>). Additional types of queues can be
