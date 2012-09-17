@@ -1,5 +1,13 @@
 **PICA-Modification** is a Perl module to handle modifications on identified
-PICA+ records. A simple modification, implemented with package
+PICA+ records. 
+
+See the Perl module PICA-Modification-App for client and server applications.
+
+# Packages
+
+## Modifications
+
+A simple modification, implemented with package
 `PICA::Modification` consists of the following attributes: 
 
 * **add**: stringified PICA+ record with fields to be added
@@ -17,7 +25,9 @@ PICA+ records. A simple modification, implemented with package
 Creation of new records or levels is not supported.  An edit must at least
 contain a field to add or a field to delete.
 
-PICA::Modification is extended to `PICA::Modification::Request` which adds the
+## Modification requests
+
+`PICA::Modification` is extended to `PICA::Modification::Request` which adds the
 following attributes:
 
 * **request**: unique identifier of the request
@@ -33,5 +43,8 @@ following attributes:
 
 All timestamps are GMT with format `YYYY-MM-DD HH:MM::SS`.
 
+## Modification Queues
+
 To manage collections of modifications and modification requests, this module
 provides the package `PICA::Modification::Queue`.
+

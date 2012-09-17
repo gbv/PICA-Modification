@@ -6,6 +6,7 @@ use warnings;
 use v5.10;
 
 use PICA::Record;
+use parent 'Exporter';
 
 =head1 DESCRIPTION
 
