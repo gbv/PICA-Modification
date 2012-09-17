@@ -14,6 +14,14 @@ PICA::Modification models a modification of an identified PICA+ record
 
 =over 4
 
+=item add
+
+A stringified PICA+ record with fields to be added.
+
+=item del
+
+A comma-separated list of PICA+ field to be removed.
+
 =item id
 
 The fully qualified record identifier of form C<PREFIX:ppn:PPN> (optional).
@@ -27,14 +35,6 @@ include level 1 fields.
 
 The EPN of the level 2 record to modify. Only required for modifications that
 include level 2 fields.
-
-=item del
-
-A comma-separated list of PICA+ field to be removed.
-
-=item add
-
-A stringified PICA+ record with fields to be added.
 
 =back
 

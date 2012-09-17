@@ -3,7 +3,6 @@ use warnings;
 use Test::More;
 
 use PICA::Record;
-use Try::Tiny;
 use PICA::Modification;
 
 sub picamod { PICA::Modification->new(@_) }
