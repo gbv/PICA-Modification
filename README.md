@@ -1,9 +1,13 @@
 **PICA-Modification** is a Perl module to handle modifications on identified
 PICA+ records. 
 
-See the Perl module PICA-Modification-App for client and server applications.
+This module's packages (`PICA::Modification`, `PICA::Modification::Request`,
+`PICA::Modification::Queue` and `PICA::Modification::TestQueue`) are fully
+covered by unit tests, to be used in other Perl code.
 
-# Packages
+See the Perl module
+[PICA-Modification-App](https://github.com/gbv/PICA-Modification-App) for
+client and server applications that can directly be used.
 
 ## Modifications
 
@@ -48,3 +52,5 @@ All timestamps are GMT with format `YYYY-MM-DD HH:MM::SS`.
 To manage collections of modifications and modification requests, this module
 provides the package `PICA::Modification::Queue`.
 
+To test additional implementations of queues, the unit testing package 
+`PICA::Modification::TestQueue` should be used.

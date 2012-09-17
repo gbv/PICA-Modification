@@ -245,3 +245,15 @@ sub apply {
 }
 
 1;
+
+=head1 SEE ALSO
+
+PICA::Modification is extended to L<PICA::Modification::Request>. Collections
+of modifications can be stored in a L<PICA::Modification::Queue>.
+
+To test additional implementations of queues, the unit testing package 
+<PICA::Modification::TestQueue> should be used.
+
+See L<PICA::Modification::App> for applications build on top of this module.
+
+=cut
