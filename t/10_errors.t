@@ -9,7 +9,8 @@ sub picamod { PICA::Modification->new(@_); }
 
 my @ok = (
  { },
- { id => '' }
+ { id => 'opac-de-23:ppn:311337856' },
+ { id => '' },
 );
 for (my $i=0; $i<$#ok; $i++) {
 	my $mod = picamod( %{ $ok[$i] } );

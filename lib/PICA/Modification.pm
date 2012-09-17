@@ -79,7 +79,7 @@ sub check {
 
 	$self->{ppn} = '';
 	$self->{dbkey} = '';
-    if ($self->{id} =~ /^([a-z]([a-z0-9-]?[a-z0-9]))*:ppn:(\d+[0-9Xx])$/) {
+    if ($self->{id} =~ /^([a-z]([a-z0-9-]?[a-z0-9]+))*:ppn:(\d+[0-9Xx])$/) {
         $self->{ppn}   = uc($3) if defined $3;
         $self->{dbkey} = lc($1) if defined $1;
     } elsif ($self->{id} ne '') {
