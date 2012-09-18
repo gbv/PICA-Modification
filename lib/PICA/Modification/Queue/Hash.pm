@@ -39,9 +39,9 @@ sub delete {
 sub list {
 	my ($self, %properties) = @_;
 
-	my $pagesize = delete $properties{pagesize} || 20;
-	my $page     = delete $properties{page} || 1;
-	my $sortby   = delete $properties{sort};
+	my $limit  = delete $properties{limit} || 20;
+	my $page   = delete $properties{page} || 1;
+	my $sortby = delete $properties{sort};
 
 	my $hash = $self->[0];
 
@@ -51,8 +51,8 @@ sub list {
             return 0 unless $_[0]->{$k} eq $v; 
         }
         $c++;
-        return 0 if $c > $page*$pagesize;
-        return 0 if $c <= ($page-1)*$pagesize;
+        return 0 if $c > $page*$limit;
+        return 0 if $c <= ($page-1)*$limit;
         1;
     };
 

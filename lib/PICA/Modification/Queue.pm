@@ -69,6 +69,6 @@ Must return the id only on success.
 =method list ( %parameters )
 
 List all or a selection of queued modifications. Parameters can be used for
-selection.  Special parameters are: C<page>, C<pagesize>, and C<sort>.
+selection.  Special parameters are: C<page>, C<limit>, and C<sort>.
 
 =cut

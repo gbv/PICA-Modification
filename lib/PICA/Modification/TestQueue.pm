@@ -49,6 +49,9 @@ sub run {
 	is scalar @$list, 1, 'list size 1';
 	entails $list->[0] => $mod->attributes, 'list contains modification';
 
+	$list = $self->list(limit => 1);
+	is scalar @$list, 1, 'list option "limit"';
+
     $mod = PICA::Modification->new( del => '012A', id => 'bar:ppn:123' );
     my $id2 = $self->insert( $mod );
 	$list = $self->list( sort => 'id' );
@@ -63,11 +66,11 @@ sub run {
         $mod = PICA::Modification->new( del => '012A', id => "doz:ppn:1$_" );
         $self->insert($mod);
     }
-    $list = $self->list( sort => 'id', pagesize => 3 );
-    is scalar @$list, 3, 'inserted five additional modifications, pagesize works';
+    $list = $self->list( sort => 'id', limit => 3 );
+    is scalar @$list, 3, 'inserted five additional modifications, limit works';
 
-    $list = $self->list( sort => 'id', pagesize => 3, page => 2 );
-    is scalar @$list, 3, 'pagesize';
+    $list = $self->list( sort => 'id', limit => 3, page => 2 );
+    is scalar @$list, 3, 'limit';
     is $list->[0]->{id}, 'doz:ppn:12', 'page';
 
     $mod = PICA::Modification->new( add => '028A $xfoo' );
