@@ -46,10 +46,11 @@ All timestamps are GMT with format C<YYYY-MM-DD HH:MM::SS>.
 =cut
 
 sub new {
-	my ($class, %attributes) = @_;
+	my $class = shift;
+	my $attributes = @_ % 2 ? $_[0]->attributes : {@_};
 
     my $self = bless { 
-		map { $_ => $attributes{$_} 
+		map { $_ => $attributes->{$_} 
 	} @ATTRIBUTES }, $class;
 
 	$self->{status} //= 0;

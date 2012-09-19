@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 
+use PICA::Modification;
 use PICA::Modification::Request;
 
 my $req = PICA::Modification::Request->new(
@@ -15,5 +16,14 @@ like $req->{created}, qr{^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$}, 'timestamp';
 $req->update(-1);
 is $req->{status}, -1, 'status updated';
 like $req->{updated}, qr{^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$}, 'timestamp';
+
+my $mod = PICA::Modification->new(
+	id => 'doz:ppn:123',
+	add => '027X $xy',
+);
+$req = PICA::Modification::Request->new( $mod );
+$mod->{id} = '';
+
+is $req->{id}, 'doz:ppn:123', 'turn modification into request'; 
 
 done_testing;

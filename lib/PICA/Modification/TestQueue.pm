@@ -44,6 +44,7 @@ sub run {
 
 	my $got = $self->get($id);
 	entails $got => $mod->attributes, 'get stored modification';
+	isa_ok $got, 'PICA::Modification::Request';
 
 	$list = $self->list();
 	is scalar @$list, 1, 'list size 1';

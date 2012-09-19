@@ -5,6 +5,8 @@ use strict;
 use warnings;
 use v5.10;
 
+use PICA::Modification::Request;
+
 sub new { 
     bless [{},0], shift; 
 }
@@ -15,17 +17,19 @@ sub get {
 }
 
 sub insert {
-	my ($self, $object) = @_;
-	return unless defined $object and !$object->error;
+	my ($self, $mod) = @_;
+	$mod = PICA::Modification::Request->new( $mod );
+	return if $mod->error;
 	my $id = ++$self->[1];
-	$self->[0]->{ $id } = $object;
+	$self->[0]->{ $id } = $mod;
 	return $id;
 }
 
 sub update { 
-    my ($self, $id => $object) = @_;
-    return unless defined $self->[0]->{ $id } and !$object->error;
-	$self->[0]->{ $id } = $object;
+    my ($self, $id => $mod) = @_;
+	$mod = PICA::Modification::Request->new( $mod );
+	return if $mod->error;
+	$self->[0]->{ $id } = $mod;
 	return $id;
 }
 
