@@ -7,25 +7,24 @@ use PICA::Modification;
 
 sub picamod { PICA::Modification->new(@_); }
 
-my @ok = (
- { },
- { id => 'opac-de-23:ppn:311337856' },
- { id => '' },
-);
+my %id = (id => 'opac-de-23:ppn:311337856'); 
+my @ok = ({%id});
 for (my $i=0; $i<$#ok; $i++) {
 	my $mod = picamod( %{ $ok[$i] } );
 	ok( !$mod->error, "ok ".($i+1));
 }
 
 my @malformed = (
-	[ {	add => '144Z $a' }, { add => 'malformed fields to add' } ], 
-	[ {	del => '144Z $a' }, { del => 'malformed fields to remove', iln => 'missing ILN for remove'} ], 
-	[ { add => '144Z $afoo' }, { iln => 'missing ILN for add' } ],
-	[ { del => '144Z' }, { iln => 'missing ILN for remove' } ],
-	[ { add => '209@ $fbar' }, { epn => 'missing EPN for add' } ],
-	[ { del => '209@' }, { epn => 'missing EPN for remove' } ],
-	[ { del => '201A', iln => 'abc', epn => 'xyz' }, { iln => 'malformed ILN', epn => 'malformed EPN' } ],
+ 	[ { id => '' }, { id => 'missing record identifier' } ],
+ 	[ { }, { id => 'missing record identifier' } ],
 	[ { id => 'ab:cd' }, { id => 'malformed record identifier' } ],
+	[ {	%id, add => '144Z $a' }, { add => 'malformed fields to add' } ], 
+	[ {	%id, del => '144Z $a' }, { del => 'malformed fields to remove', iln => 'missing ILN for remove'} ], 
+	[ { %id, add => '144Z $afoo' }, { iln => 'missing ILN for add' } ],
+	[ { %id, del => '144Z' }, { iln => 'missing ILN for remove' } ],
+	[ { %id, add => '209@ $fbar' }, { epn => 'missing EPN for add' } ],
+	[ { %id, del => '209@' }, { epn => 'missing EPN for remove' } ],
+	[ { %id, del => '201A', iln => 'abc', epn => 'xyz' }, { iln => 'malformed ILN', epn => 'malformed EPN' } ],
 );
 
 foreach (@malformed) {

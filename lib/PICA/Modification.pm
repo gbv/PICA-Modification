@@ -25,7 +25,7 @@ A comma-separated list of PICA+ field to be removed.
 
 =item id
 
-The fully qualified record identifier of form C<PREFIX:ppn:PPN> (optional).
+The fully qualified record identifier of form C<PREFIX:ppn:PPN>.
 
 =item iln
 
@@ -79,10 +79,12 @@ sub check {
 
 	$self->{ppn} = '';
 	$self->{dbkey} = '';
-    if ($self->{id} =~ /^([a-z]([a-z0-9-]?[a-z0-9]+))*:ppn:(\d+[0-9Xx])$/) {
+    if ($self->{id} =~ /^([a-z]([a-z0-9-]?[a-z0-9]+))*:ppn:(\d+\d*[Xx]?)$/) {
         $self->{ppn}   = uc($3) if defined $3;
         $self->{dbkey} = lc($1) if defined $1;
-    } elsif ($self->{id} ne '') {
+    } elsif ($self->{id} eq '') {
+        $self->error( id => 'missing record identifier' );
+    } else {
         $self->error( id => 'malformed record identifier' );
     }
 

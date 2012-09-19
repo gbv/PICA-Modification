@@ -8,7 +8,7 @@ use PICA::Modification;
 sub picamod { PICA::Modification->new(@_) }
 sub picarec { PICA::Record->new(@_) }
 
-my $e = picamod( del => '021A', add => '021A $aWorld' );
+my $e = picamod( del => '021A', add => '021A $aWorld', id => 'xy:ppn:1' );
 my $p1 = picarec( '021A $aHello' );
 my $p2 = picarec( '021A $aWorld' );
 
@@ -21,9 +21,6 @@ is( $e->error('id'), undef, 'error cleaned' );
 $r = $e->apply( $p1 );
 ok( !$e->error, 'applied' );
 is( "$r", "$p2", 'replaced field' );
-
-$r = $e->apply( $p1, strict => 1 );
-is( "$r", "$p2", 'without PPN and id' );
 
 $p1->ppn('123'); $p1->sort;
 $p2->ppn('123'); $p2->sort;

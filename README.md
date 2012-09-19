@@ -14,20 +14,21 @@ client and server applications that can directly be used.
 A simple modification, implemented with package
 `PICA::Modification` consists of the following attributes: 
 
-* **add**: stringified PICA+ record with fields to be added
+* **add**: stringified PICA+ record with fields to be added (mandatory unless
+  fields to be removed are specified)
 
-* **del**: comma-separated list of PICA+ field to be removed
+* **del**: comma-separated list of PICA+ field to be removed (mandatory unless
+  fields to be added are specified)
 
-* **id**: fully qualified record identifier ` PREFIX:ppn:PPN` (optional)
+* **id**: fully qualified record identifier ` PREFIX:ppn:PPN` (mandatory)
 
-* **iln**: ILN of a level 1 record to modify (required for modifications that
+* **iln**: ILN of a level 1 record to modify (mandatory for modifications that
   include level 1 fields).
 
-* **iln**: EPN of a level 2 record to modify (required for modifications that
+* **iln**: EPN of a level 2 record to modify (mandatory for modifications that
   include level 2 fields).
 
-Creation of new records or levels is not supported.  An edit must at least
-contain a field to add or a field to delete.
+Creation of new records or levels is not supported.
 
 ## Modification requests
 
