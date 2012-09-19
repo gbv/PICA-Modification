@@ -6,6 +6,7 @@ use warnings;
 use v5.10;
 
 use PICA::Modification::Request;
+use Scalar::Util qw(blessed);
 
 sub new { 
     bless [{},0], shift; 
@@ -16,8 +17,9 @@ sub get {
    return $self->[0]->{ $id };
 }
 
-sub insert {
+sub request {
 	my ($self, $mod) = @_;
+	return if !$mod->isa('PICA::Modification') or $mod->isa('PICA::Modification::Request');
 	$mod = PICA::Modification::Request->new( $mod );
 	return if $mod->error;
 	my $id = ++$self->[1];

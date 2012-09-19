@@ -23,7 +23,7 @@ sub test_queue {
 }
 
 sub get { my $t = shift; $t->{queue}->get(@_); }
-sub insert { my $t = shift; $t->{queue}->insert(@_); }
+sub request { my $t = shift; $t->{queue}->request(@_); }
 sub update { my $t = shift; $t->{queue}->update(@_); }
 sub delete { my $t = shift; $t->{queue}->delete(@_); }
 sub list { my $t = shift; $t->{queue}->list(@_); }
@@ -39,12 +39,15 @@ sub run {
 		id  => 'foo:ppn:123',
 	);
 
-	my $id = $self->insert( $mod );
+	my $id = $self->request( $mod );
 	ok( $id, "inserted modification" );
 
 	my $got = $self->get($id);
 	entails $got => $mod->attributes, 'get stored modification';
 	isa_ok $got, 'PICA::Modification::Request';
+
+	my $req = PICA::Modification::Request->new($mod);
+    is $self->request($req), undef, 'reject insertion of modification requests';
 
 	$list = $self->list();
 	is scalar @$list, 1, 'list size 1';
@@ -54,7 +57,7 @@ sub run {
 	is scalar @$list, 1, 'list option "limit"';
 
     $mod = PICA::Modification->new( del => '012A', id => 'bar:ppn:123' );
-    my $id2 = $self->insert( $mod );
+    my $id2 = $self->request( $mod );
 	$list = $self->list( sort => 'id' );
 	is scalar @$list, 2, 'list size 2 after inserting second modification';
     is $list->[0]->{id}, 'bar:ppn:123', 'list can be sorted';
@@ -65,7 +68,7 @@ sub run {
 
     foreach (0..4) {
         $mod = PICA::Modification->new( del => '012A', id => "doz:ppn:1$_" );
-        $self->insert($mod);
+        $self->request($mod);
     }
     $list = $self->list( sort => 'id', limit => 3 );
     is scalar @$list, 3, 'inserted five additional modifications, limit works';
@@ -81,8 +84,9 @@ sub run {
     is $mod->{del}, '', 'update changed';
     is $mod->{add}, '028A $xfoo', 'update changed';
 
+
 	$mod = PICA::Modification->new( del => '012A', id  => 'xxx' );
-    is $self->insert($mod), undef, 'reject modification with error';
+    is $self->request($mod), undef, 'reject modification with error';
 
 	$mod = PICA::Modification->new( del => '012A', id  => 'xxx' );
     is $self->update( $id => $mod), undef, 'reject modification with error';

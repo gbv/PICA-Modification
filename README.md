@@ -49,8 +49,19 @@ All timestamps are GMT with format `YYYY-MM-DD HH:MM::SS`.
 
 ## Modification Queues
 
-To manage collections of modifications and modification requests, this module
-provides the package `PICA::Modification::Queue`.
+This module provides the package `PICA::Modification::Queue` to manage
+collections of modification requests. A modification queue must implement the
+following methods:
+
+* `get($id)` to return a stored modification request
+
+* `request($mod)` to request and store a new modification
+
+* `delete($id)` to delete a stored modification request
+
+* `update($id,$mod)` to modify a stored modification request
+
+* `list( %parameters )` to list stored modification requests
 
 To test additional implementations of queues, the unit testing package 
 `PICA::Modification::TestQueue` should be used.

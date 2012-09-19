@@ -50,7 +50,7 @@ implemented in the C<PICA::Modification::Queue::> module namespace.
 
 Creates a new queue. Options are passed to the queue's constructor.
 
-=method insert ( $modification )
+=method request ( $modification )
 
 Must return the id only on success.
 
@@ -58,7 +58,7 @@ Must return the id only on success.
 
 Returns a stored modification or undef.
 
-=method update ( $id => $modification )
+=method update ( $id => $modification_or_modification_request )
 
 Must return the id only on success.
 
