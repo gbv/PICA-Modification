@@ -5,10 +5,13 @@ use Test::More;
 use PICA::Modification;
 use PICA::Modification::Request;
 
-my $req = PICA::Modification::Request->new(
+my $attr = {
 	id => 'foo:ppn:789',
 	del => '012A'
-);
+};
+
+my $req = new_ok('PICA::Modification::Request'=>[$attr]);
+$req = new_ok('PICA::Modification::Request'=>[%$attr]);
 
 is $req->{status}, 0, 'status 0 by default';
 like $req->{created}, qr{^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$}, 'timestamp';

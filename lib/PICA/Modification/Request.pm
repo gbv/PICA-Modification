@@ -7,6 +7,7 @@ use v5.10;
 
 use parent 'PICA::Modification';
 use Time::Stamp gmstamp => { format => 'easy', tz => '' };
+use Scalar::Util qw(blessed);
 
 our @ATTRIBUTES = qw(id iln epn del add request creator status updated created);
 
@@ -47,7 +48,7 @@ All timestamps are GMT with format C<YYYY-MM-DD HH:MM::SS>.
 
 sub new {
 	my $class = shift;
-	my $attributes = @_ % 2 ? $_[0]->attributes : {@_};
+	my $attributes = @_ % 2 ?  (blessed $_[0] ? $_[0]->attributes : {%{$_[0]}}) : {@_};
 
     my $self = bless { 
 		map { $_ => $attributes->{$_} 
