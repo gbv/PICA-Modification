@@ -5,14 +5,11 @@ use Test::More;
 use PICA::Record;
 use PICA::Modification;
 
-sub picamod { PICA::Modification->new(@_); }
-
 my %id = (id => 'opac-de-23:ppn:311337856'); 
-my @ok = ({%id});
-for (my $i=0; $i<$#ok; $i++) {
-	my $mod = picamod( %{ $ok[$i] } );
-	ok( !$mod->error, "ok ".($i+1));
-}
+my $mod = PICA::Modification->new( %id ); 
+ok !$mod->error, 'ok';
+is $mod->{ppn}, 311337856, 'ppn set';
+is $mod->{dbkey}, 'opac-de-23', 'dbkey set';
 
 my @malformed = (
  	[ { id => '' }, { id => 'missing record identifier' } ],
@@ -29,7 +26,7 @@ my @malformed = (
 
 foreach (@malformed) {
 	my ($fields,$errors) = @$_;
-	my $mod = picamod( %$fields );
+	my $mod = PICA::Modification->new( %$fields );
 	is( $mod->error, scalar (keys %$errors) );
 	while (my ($f,$msg) = each %$errors) {
 		is( $mod->error($f), $msg, $msg );

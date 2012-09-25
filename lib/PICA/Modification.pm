@@ -79,8 +79,8 @@ sub check {
 
 	$self->{ppn} = '';
 	$self->{dbkey} = '';
-    if ($self->{id} =~ /^([a-z]([a-z0-9-]?[a-z0-9]+))*:ppn:(\d+\d*[Xx]?)$/) {
-        $self->{ppn}   = uc($3) if defined $3;
+    if ($self->{id} =~ /^(([a-z]([a-z0-9-]?[a-z0-9]+))*):ppn:(\d+\d*[Xx]?)$/) {
+        $self->{ppn}   = uc($4) if defined $4;
         $self->{dbkey} = lc($1) if defined $1;
     } elsif ($self->{id} eq '') {
         $self->error( id => 'missing record identifier' );
@@ -249,6 +249,8 @@ sub apply {
 1;
 
 =head1 SEE ALSO
+
+See L<PICA::Record> for information about PICA+ record format.
 
 PICA::Modification is extended to L<PICA::Modification::Request>. Collections
 of modifications can be stored in a L<PICA::Modification::Queue>.
