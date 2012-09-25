@@ -71,3 +71,10 @@ sub list {
 }
 
 1;
+
+=head1 DESCRIPTION
+
+PICA::Modification::Queue::Hash implements a L<PICA::Modification::Queue> that
+directly stored modification requests as references in memory.
+
+=encoding utf-8

@@ -261,3 +261,5 @@ To test additional implementations of queues, the unit testing package
 See L<PICA::Modification::App> for applications build on top of this module.
 
 =cut
+
+=encoding utf-8

@@ -6,11 +6,18 @@ use warnings;
 use v5.10;
 
 use Carp;
+use Scalar::Util qw(reftype);
 
 sub new {
     my $class = shift;
     my $name  = shift || 'hash';
     
+    if ('HASH' ~~ reftype($name)) {
+        my $args = $name;
+        $name = delete $name->{type};
+        return $class->new( $name, %$args );
+    }
+
     $class = $class . '::' . ucfirst($name);
 
     my $file = $class;
@@ -24,9 +31,16 @@ sub new {
 
 =head1 SYNOPSIS
 
-    # Create a PICA::Modification::Queue::Hash
+    # create a PICA::Modification::Queue::Hash
     my $q = PICA::Modification::Queue->new('Hash'); 
 
+    # create a different kind of queue (all equivalent)
+    $q = PICA::Modification::Queue->new('foo', bar => 'doz'); 
+    $q = PICA::Modification::Queue->new({type => 'foo', bar => 'doz' }); 
+    $q = PICA::Modification::Queue::Foo->new( bar => 'doz' ); 
+
+    # operations on queues:
+    
     my $id  = $q->insert( $modification );
     my $mod = $q->get( $id );
     $id     = $q->update( $id => $modification );
@@ -72,3 +86,5 @@ List all or a selection of queued modifications. Parameters can be used for
 selection.  Special parameters are: C<page>, C<limit>, and C<sort>.
 
 =cut
+
+=encoding utf-8
