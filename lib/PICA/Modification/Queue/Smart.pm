@@ -43,6 +43,10 @@ sub get {
     my ($self, $id) = @_;
     my $request = $self->{queue}->get($id) || return;
 
+    return $request if $request->{status} != 0;
+
+    # TODO: reject on error?
+
     my $last = $request->{updated} || $request->{created};
     my $next = gmstamp(time()-$self->{check});
 
@@ -50,8 +54,10 @@ sub get {
 
     if ( 0 ~~ $self->pending($request) ) {
         $request->{status} = 1;
-        $self->{queue}->update( $id => $request );
-    }
+    } 
+    $self->{updated} = gmstamp;
+    $self->{queue}->update( $id => $request );
+    $self->{queue}->get($id);
 
     $request;
 }
