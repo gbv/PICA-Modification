@@ -21,7 +21,8 @@ A stringified PICA+ record with fields to be added.
 
 =item del
 
-A comma-separated list of PICA+ field to be removed.
+A comma-separated list of PICA+ field tags to be removed. All tags of fields 
+to be added must also be included for deletion so modifications are idempotent.
 
 =item id
 
@@ -91,6 +92,8 @@ sub check {
     $self->error( iln => "malformed ILN" ) unless $self->{iln} =~ /^\d*$/;
     $self->error( epn => "malformed EPN" ) unless $self->{epn} =~ /^\d*$/;
 
+    my %must_delete;
+
     if ($self->{add}) {
         my $pica = eval { PICA::Record->new( $self->{add} ) };
         if ($pica) {
@@ -99,6 +102,11 @@ sub check {
 			$self->error( epn => 'missing EPN for add' )
 				if !$self->{epn} and $pica->field(qr/^2/);
             $pica->sort;
+            foreach ($pica->fields) {
+                my $tag = $_->tag;
+                # TODO: remove occurrence from level 2 tags
+                $must_delete{$tag} = 1;
+            }
 	    	$self->{add} = "$pica";
 			chomp $self->{add};
         } else {
@@ -106,7 +114,7 @@ sub check {
         }
     }
 
-	my @del = sort grep { $_ !~ /^\s*$/ } split(/\s*,\s*/, $self->{del});
+	my @del = grep { $_ !~ /^\s*$/ } split(/\s*,\s*/, $self->{del});
 
 	$self->error( del => "malformed fields to remove" )
         if grep { $_ !~  qr{^[012]\d\d[A-Z@](/\d\d)?$} } @del;
@@ -116,7 +124,12 @@ sub check {
 	$self->error( iln => 'missing ILN for remove' )
 		if !$self->{iln} and grep { /^1/ } @del;
 
-    $self->{del} = join (',', @del);
+    delete $must_delete{$_} for @del;
+    if (%must_delete) {
+        $self->error( del => 'fields to add must also be deleted' );
+    }
+
+    $self->{del} = join (',', sort @del);
 
     return $self;
 }

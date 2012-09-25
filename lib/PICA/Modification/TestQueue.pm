@@ -77,11 +77,11 @@ sub run {
     is scalar @$list, 3, 'limit';
     is $list->[0]->{id}, 'doz:ppn:12', 'page';
 
-    $mod = PICA::Modification->new( add => '028A $xfoo', id => 'ab:ppn:1' );
+    $mod = PICA::Modification->new( add => '028A $xfoo', del => '028A', id => 'ab:ppn:1' );
     $id2 = $self->update( $id => $mod );
     is $id2, $id, 'update allowed';
     $mod = $self->get($id);
-    is $mod->{del}, '', 'update changed';
+    is $mod->{del}, '028A', 'update changed';
     is $mod->{add}, '028A $xfoo', 'update changed';
 
 
