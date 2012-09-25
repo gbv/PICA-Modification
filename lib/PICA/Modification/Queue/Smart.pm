@@ -22,7 +22,7 @@ sub new {
     
     $args{check} ||= 60;
 
-    if (!ref $args{via} and /^https?:\/\// ~~ $args{via}) {
+    if (($args{via} // '') =~ /^https?:\/\//) {
         $args{unapi} = $args{via};
         $args{via} = sub {
             my $id = shift;
