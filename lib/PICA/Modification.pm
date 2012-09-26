@@ -1,63 +1,34 @@
 package PICA::Modification;
-#ABSTRACT: Modification of an identified PICA+ record
+#ABSTRACT: Idempotent modifications of identified PICA+ records
 
 use strict;
 use warnings;
 use v5.10;
 
-use PICA::Record;
 use parent 'Exporter';
 
-=head1 DESCRIPTION
+use PICA::Record 0.583;
+use Scalar::Util qw(blessed);
 
-PICA::Modification models a modification of an identified PICA+ record
-(L<PICA::Record>). The modification consist of the following attributes:
-
-=over 4
-
-=item add
-
-A stringified PICA+ record with fields to be added.
-
-=item del
-
-A comma-separated list of PICA+ field tags to be removed. All tags of fields 
-to be added must also be included for deletion so modifications are idempotent.
-
-=item id
-
-The fully qualified record identifier of form C<PREFIX:ppn:PPN>.
-
-=item iln
-
-The ILN of level 1 record to modify. Only required for modifications that
-include level 1 fields.
-
-=item epn
-
-The EPN of the level 2 record to modify. Only required for modifications that
-include level 2 fields.
-
-=back
-
-A modification instance may be malformed. A mapping from malformed attributes
-to error messages is stored together with the PICA::Modification object.
-
-=method new ( %attributes )
-
-Creates a new edit with given attributes. Missing attributes are set to the
-empty string. On creation, all attributes are checked and normalized.
-
-=cut
+our @ATTRIBUTES = qw(id iln epn del add);
 
 sub new {
-	my ($class, %attributes) = @_;
+	my $class = shift;
+	my $attributes = @_ % 2 ? (blessed $_[0] ? $_[0]->attributes : $_[0]) : {@_};
 
+    no strict 'refs';
     my $self = bless {
-		map { $_ => $attributes{$_} } qw(id iln epn del add)
+		map { $_ => $attributes->{$_} } @{ $class.'::ATTRIBUTES' }
 	}, $class;
 
 	$self->check;
+}
+
+sub attributes {
+	my $self = shift;
+
+    no strict 'refs';
+	return { map { $_ => $self->{$_} } @{ ref($self).'::ATTRIBUTES' } };
 }
 
 =method check
@@ -134,21 +105,6 @@ sub check {
     return $self;
 }
 
-=method attributes
-
-Returns a hash reference with attributes of this modification (del, add, id,
-iln, epn).
-
-=cut
-
-sub attributes {
-	my $self = shift;
-
-	return {
-		map { $_ => $self->{$_} } qw(id iln epn del add)
-	};
-}
-
 =method error( [ $attribute [ => $message ] ] )
 
 Gets or sets an error message connected to an attribute. Without arguments this
@@ -177,9 +133,9 @@ record as L<PICA::Record> or C<undef> on malformed modifications.
 
 Only edits at level 0 and level 1 are supported by now.
 
-The argument C<strict> can be used to enable additional validation. Validation
-errors are also collected in the PICA::Modification object. A valid modification
-must:
+The experimental argument C<strict> can be used to enable additional
+validation. Validation errors are also collected in the PICA::Modification
+object. A valid modification must:
 
 =over 4
 
@@ -261,17 +217,67 @@ sub apply {
 
 1;
 
-=head1 SEE ALSO
+=head1 SYNOPSIS
 
-See L<PICA::Record> for information about PICA+ record format.
+  use PICA::Modification;
+
+  # delete field '0123A' from record 'foo:ppn:123'
+  my $mod = PICA::Modification->new( 
+      id => 'foo:ppn:123', del => '0123A' 
+  );
+
+  $after = $mod->apply( $before );
+
+=head1 DESCRIPTION
+
+PICA::Modification models a modification of an identified PICA+ record
+(L<PICA::Record>). The modification consist of the following attributes:
+
+=over 4
+
+=item add
+
+A stringified PICA+ record with fields to be added.
+
+=item del
+
+A comma-separated list of PICA+ field tags to be removed. All tags of fields 
+to be added must also be included for deletion so modifications are idempotent.
+
+=item id
+
+The fully qualified record identifier of form C<PREFIX:ppn:PPN>.
+
+=item iln
+
+The ILN of level 1 record to modify. Only required for modifications that
+include level 1 fields.
+
+=item epn
+
+The EPN of the level 2 record to modify. Only required for modifications that
+include level 2 fields.
+
+=back
+
+A modification instance may be malformed. A mapping from malformed attributes
+to error messages is stored together with the PICA::Modification object.
 
 PICA::Modification is extended to L<PICA::Modification::Request>. Collections
 of modifications can be stored in a L<PICA::Modification::Queue>.
 
-To test additional implementations of queues, the unit testing package 
-<PICA::Modification::TestQueue> should be used.
+=method new ( %attributes | {%attributes} | $modification )
 
-See L<PICA::Modification::App> for applications build on top of this module.
+Creates a new modification with given attributes. Missing attributes are set to
+the empty string. On creation, all attributes are checked and normalized.
+
+=method attributes
+
+Returns a hash reference with attributes of this modification.
+
+=head1 SEE ALSO
+
+See L<PICA::Record> for information about PICA+ record format.
 
 =cut
 

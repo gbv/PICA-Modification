@@ -52,14 +52,9 @@ sub get {
 
     return $request if ($next cmp $last) == -1;
 
-    if ( 0 ~~ $self->pending($request) ) {
-        $request->{status} = 1;
-    } 
-    $self->{updated} = gmstamp;
+    $request->update( 0 ~~ $self->pending($request) ? 1 : 0 );
     $self->{queue}->update( $id => $request );
     $self->{queue}->get($id);
-
-    $request;
 }
 
 sub request {
