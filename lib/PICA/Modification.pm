@@ -7,7 +7,7 @@ use v5.10;
 
 use parent 'Exporter';
 
-use PICA::Record 0.583;
+use PICA::Record 0.584;
 use Scalar::Util qw(blessed);
 
 our @ATTRIBUTES = qw(id iln epn del add);
@@ -87,11 +87,12 @@ sub check {
 
 	my @del = grep { $_ !~ /^\s*$/ } split(/\s*,\s*/, $self->{del});
 
-	$self->error( del => "malformed fields to remove" )
+	$self->error( del => 'malformed fields to remove' )
         if grep { $_ !~  qr{^[012]\d\d[A-Z@](/\d\d)?$} } @del;
 
 	$self->error( epn => 'missing EPN for remove' )
 		if !$self->{epn} and grep { /^2/ } @del;
+
 	$self->error( iln => 'missing ILN for remove' )
 		if !$self->{iln} and grep { /^1/ } @del;
 
@@ -101,6 +102,10 @@ sub check {
     }
 
     $self->{del} = join (',', sort @del);
+
+    if (!$self->{add} and !$self->{del} and !$self->error('del')) {
+        $self->error( del => 'edit must not be empty' );
+    }
 
     return $self;
 }
@@ -193,26 +198,45 @@ sub apply {
 
     # Level 1
 	if (@level1 or $add->field(qr/^1../)) {
-
 		if ($strict and !$pica->holdings($iln)) {
 			$self->error('iln', 'ILN not found');
 			return;
 		}
+    }
 
-		foreach my $h ( $pica->holdings ) {
-			if ($iln eq ($h->iln // '')) {
-				$h->remove( map { $_ =~ qr{/} ? $_ : "$_/.." } @level1 );
-				$h->append( $add->field(qr/^1/) );
-			} 
-			$result->append( $h->fields );
-		}
-	}
-
-	# TODO: Level 2
+    foreach my $h ( $pica->holdings ) {
+        if ($iln and $iln eq ($h->iln // '')) {
+            @level1 = map { $_ =~ qr{/} ? $_ : ($_,"$_/..") } @level1; 
+            $h->remove( @level1 );
+            $h->append( $add->field(qr/^1/) );
+        } 
+        $result->append( $h->fields );
+	    # TODO: Level 2
+    }
 	
     $result->sort;
 
     return $result;
+}
+
+=method diff
+
+TODO: Test this!
+
+=cut
+
+sub diff {
+    my $self = shift;
+    my $before = shift;
+
+    my $after = $self->apply( @_ ) or return;
+    require Text::Diff;
+
+    my $l = scalar $before->fields + scalar $after->fields;
+    my $diff = Text::Diff::diff(\$before,\$after,{CONTEXT => $l});
+    $diff =~ s/^.+$//m;
+
+    return $diff;
 }
 
 1;
