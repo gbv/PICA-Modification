@@ -1,5 +1,5 @@
 package PICA::Modification;
-#ABSTRACT: Idempotent modifications of identified PICA+ records
+#ABSTRACT: Idempotent modification of an identified PICA+ record
 
 use strict;
 use warnings;
@@ -11,6 +11,15 @@ use PICA::Record 0.584;
 use Scalar::Util qw(blessed);
 
 our @ATTRIBUTES = qw(id iln epn del add);
+
+=method new ( %attributes | { %attributes } | $modification )
+
+Creates a new modification from attributes, given as hash, as hash reference or
+as another L<PICA::Modification>. The modification is L<checked|/check> on
+creation, so all attributes are normalized, missing attributes are set to the
+empty string and invalid attributes result in L<errors|/error>.
+
+=cut
 
 sub new {
 	my $class = shift;
@@ -24,6 +33,12 @@ sub new {
 	$self->check;
 }
 
+=method attributes
+
+Returns a new hash reference with attributes of this modification.
+
+=cut
+
 sub attributes {
 	my $self = shift;
 
@@ -31,10 +46,31 @@ sub attributes {
 	return { map { $_ => $self->{$_} } @{ ref($self).'::ATTRIBUTES' } };
 }
 
+=method error( [ $attribute [ => $message ] ] )
+
+Gets or sets an error message connected to an attribute. Without arguments this
+method returns the current number of errors.
+
+=cut
+
+sub error {
+    my $self = shift;
+
+    return (scalar keys %{$self->{errors}}) unless @_;
+    
+    my $attribute = shift;
+    return $self->{errors}->{$attribute} unless @_;
+
+    my $message = shift;
+    $self->{errors}->{$attribute} = $message;
+
+    return $message;
+}
+
 =method check
 
-Checks and normalized all attributes. A list of error messages is collected,
-each connected to the attribute that an error originates from.
+Normalizes and checks all attributes. Missing values are set to the empty string
+and invalid attributes result in L<errors|/error>. Returns the modification.
 
 =cut
 
@@ -43,7 +79,7 @@ sub check {
 
 	$self->{errors} = { };
 
-	foreach my $attr (qw(id iln epn del add)) {
+	foreach my $attr (@ATTRIBUTES) {
 		my $value = $self->{$attr} // '';
 	    $value =~ s/^\s+|\s+$//g;
 		$self->{$attr} = $value;
@@ -107,89 +143,50 @@ sub check {
         $self->error( del => 'edit must not be empty' );
     }
 
+    if ( !$self->error('del') ) {
+        my @bad = grep { /^(003@|101@|203@)/; } @del;
+        if (@bad) {
+            $self->error( del => 'must not modify field: '.join(', ',@bad) );
+        }
+	}
+
     return $self;
 }
 
-=method error( [ $attribute [ => $message ] ] )
-
-Gets or sets an error message connected to an attribute. Without arguments this
-method returns the number of errors.
-
-=cut
-
-sub error {
-    my $self = shift;
-
-    return (scalar keys %{$self->{errors}}) unless @_;
-    
-    my $attribute = shift;
-    return $self->{errors}->{$attribute} unless @_;
-
-    my $message = shift;
-    $self->{errors}->{$attribute} = $message;
-
-    return $message;
-}
-
-=method apply ( $pica [, strict => 0|1 ] )
+=method apply ( $pica )
 
 Applies the modification on a given PICA+ record and returns the resulting
 record as L<PICA::Record> or C<undef> on malformed modifications. 
 
 Only edits at level 0 and level 1 are supported by now.
 
-The experimental argument C<strict> can be used to enable additional
-validation. Validation errors are also collected in the PICA::Modification
-object. A valid modification must:
-
-=over 4
-
-=item *
-
-have a record identifier with PPN equal to the record's PPN (or both have none)
-
-=item *
-
-have ILN/EPN matching to the record's ILN/EPN (if given).
-
-=back
+PPN/ILN/EPN must match or an L<error|/error> is set.
 
 =cut
 
 sub apply {
     my ($self, $pica, %args) = @_;
-	my $strict = $args{strict};
 
     return if $self->error;
 
 	if (!$pica) {
 		$self->error( id => 'record not found' );
 		return;
-	} elsif ( $strict ) {
-		if ( ($pica->ppn // '') ne $self->{ppn} ) {
-			$self->error( id => 'PPN does not match' );
-			return;
-    	}
-
-    	# TODO: check for disallowed fields to add/remove
 	}
-
-    my $iln = $self->{iln};
-    my $epn = $self->{epn};
-
-	# TODO: get ILN from record
-	if ( $strict and $epn ne '' and $iln eq '' ) {
-	    $self->error( iln => "ILN missing" );
+	if ( defined $pica->ppn and $pica->ppn ne $self->{ppn} ) {
+	    $self->error( id => 'PPN does not match' );
 		return;
-	}
+    }
 
     my $add = PICA::Record->new( $self->{add} || '' );
     my $del = [ split ',', $self->{del} ];
 
-    # new PICA record with all level0 fields but the ones to remove
     my @level0 = grep /^0/, @$del;
     my @level1 = grep /^1/, @$del;
     my @level2 = grep /^2/, @$del;
+
+    my $iln = $self->{iln};
+    my $epn = $self->{epn};
 
     # Level 0
     my $result = $pica->main;
@@ -197,11 +194,9 @@ sub apply {
     $result->append( $add->main );    
 
     # Level 1
-	if (@level1 or $add->field(qr/^1../)) {
-		if ($strict and !$pica->holdings($iln)) {
-			$self->error('iln', 'ILN not found');
-			return;
-		}
+	if (@level1 and !$pica->holdings($iln)) {
+		$self->error('iln', 'ILN not found');
+		return;
     }
 
     foreach my $h ( $pica->holdings ) {
@@ -211,6 +206,7 @@ sub apply {
             $h->append( $add->field(qr/^1/) );
         } 
         $result->append( $h->fields );
+
 	    # TODO: Level 2
     }
 	
@@ -290,14 +286,7 @@ to error messages is stored together with the PICA::Modification object.
 PICA::Modification is extended to L<PICA::Modification::Request>. Collections
 of modifications can be stored in a L<PICA::Modification::Queue>.
 
-=method new ( %attributes | {%attributes} | $modification )
-
-Creates a new modification with given attributes. Missing attributes are set to
-the empty string. On creation, all attributes are checked and normalized.
-
-=method attributes
-
-Returns a hash reference with attributes of this modification.
+=cut
 
 =head1 SEE ALSO
 
