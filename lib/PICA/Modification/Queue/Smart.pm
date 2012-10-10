@@ -89,7 +89,7 @@ sub pending {
     my $before = $self->{via}->( $mod->{id} );
     return unless blessed $before and $before->isa('PICA::Record');
 
-    my $after = $mod->apply( $before, strict => 1 ) || return;
+    my $after = $mod->apply( $before ) || return;
 
     return ($before->string eq $after->string ? 0 : 1);
 }

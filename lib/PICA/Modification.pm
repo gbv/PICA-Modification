@@ -216,6 +216,7 @@ sub apply {
     return $result;
 }
 
+
 =method diff ( $record [, $context ] )
 
 Applies the modification to a given PICA+ record and returns a diff on success.
