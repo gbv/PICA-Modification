@@ -51,6 +51,12 @@ PICA
 101@ $a50$cPICA
 144Z $axx
 PICA
+    diff => <<'PICA',
+ 101@ $a20$cPICA
+-144Z $all
+ 101@ $a50$cPICA
+PICA
+    context => 1,
  },{
     about => 'modified level 0 field',
     id => 'abc:ppn:123', iln => 50, del => '011@', add => '011@ $a2003',
@@ -70,15 +76,24 @@ PICA
 203@/01 $0123
 203@/02 $0456
 PICA
+    diff => "+011@ \$a2003\n-011@ \$a1999\n",
+    context => 0,
   }
 );
 
 foreach my $test (@tests) {
-    my $pica   = PICA::Record->new(delete $test->{pica});
-    my $expect = PICA::Record->new(delete $test->{expect});
-    my $about  = delete $test->{about};
-    my $got    = PICA::Modification->new( %$test )->apply( $pica );
-    is "$got", "$expect", $about;
+    my $pica    = PICA::Record->new(delete $test->{pica});
+    my $expect  = PICA::Record->new(delete $test->{expect});
+    my $about   = delete $test->{about};
+    my $diff    = delete $test->{diff};
+    my $context = delete $test->{context};
+
+    my $mod = PICA::Modification->new( %$test );
+    is $mod->apply($pica)->string, $expect->string, $about;
+
+    if ($diff) {
+        is $mod->diff($pica,$context), $diff, 'diff'
+    }
 }
 
 done_testing;

@@ -9,6 +9,7 @@ use parent 'Exporter';
 
 use PICA::Record 0.584;
 use Scalar::Util qw(blessed);
+use Text::Diff ();
 
 our @ATTRIBUTES = qw(id iln epn del add);
 
@@ -215,22 +216,28 @@ sub apply {
     return $result;
 }
 
-=method diff
+=method diff ( $record [, $context ] )
 
-TODO: Test this!
+Applies the modification to a given PICA+ record and returns a diff on success.
+The context attribute specifies the number of fields before/after each deleted
+or added field. If undefines, all fields are included in the diff.
 
 =cut
 
 sub diff {
-    my $self = shift;
-    my $before = shift;
+    my ($self, $record, $context) = @_;
 
-    my $after = $self->apply( @_ ) or return;
-    require Text::Diff;
+    my $result = $self->apply( $record ) or return;
 
-    my $l = scalar $before->fields + scalar $after->fields;
-    my $diff = Text::Diff::diff(\$before,\$after,{CONTEXT => $l});
-    $diff =~ s/^.+$//m;
+    $context //= (scalar $record->fields + scalar $result->fields);
+    
+    my $diff = Text::Diff::diff(
+        \($record->string),
+        \($result->string),
+        {CONTEXT => $context}
+    );
+
+    $diff =~ s/^@.*$ \n//xgm;
 
     return $diff;
 }
